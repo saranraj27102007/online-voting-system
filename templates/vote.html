@@ -1,0 +1,20 @@
+<html>
+<head>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+<div class="container">
+
+<h2>Vote Now</h2>
+
+{% for c in candidates %}
+<a href="/cast_vote/{{c.id}}">
+<button>{{c.name}}</button>
+</a>
+<br><br>
+{% endfor %}
+
+</div>
+</body>
+</html>

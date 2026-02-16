@@ -1,0 +1,38 @@
+<html>
+<head>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<div class="container">
+<h2>Live Election Results</h2>
+
+<canvas id="chart"></canvas>
+
+</div>
+
+<script>
+const ctx = document.getElementById('chart');
+
+let chart = new Chart(ctx,{
+type:'bar',
+data:{labels:[],datasets:[{label:'Votes',data:[]}]}
+})
+
+function loadData(){
+fetch("/results_data")
+.then(r=>r.json())
+.then(data=>{
+chart.data.labels = Object.keys(data)
+chart.data.datasets[0].data = Object.values(data)
+chart.update()
+})
+}
+
+setInterval(loadData,2000)
+</script>
+
+</body>
+</html>
