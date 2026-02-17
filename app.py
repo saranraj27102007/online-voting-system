@@ -1,129 +1,166 @@
-from flask import Flask, render_template, request, redirect, session, jsonify
+from flask import Flask, render_template, request, redirect, session, url_for
 from flask_sqlalchemy import SQLAlchemy
-from twilio.rest import Client
-import random
 
 app = Flask(__name__)
-app.secret_key = "secret123"
+app.secret_key = "adminsecret"
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+# Database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///voting.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 
-# ---------------- DATABASE ---------------- #
+# ======================
+# Database Models
+# ======================
 
-class User(db.Model):
+class Voter(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    phone = db.Column(db.String(15))
+    voter_id = db.Column(db.String(50), unique=True)
     voted = db.Column(db.Boolean, default=False)
+
 
 class Candidate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50))
+    name = db.Column(db.String(100))
     votes = db.Column(db.Integer, default=0)
 
-# ---------- Create Default Candidates ---------- #
+
+class Admin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50))
+    password = db.Column(db.String(50))
+
+
+# ======================
+# Create Database
+# ======================
 
 with app.app_context():
     db.create_all()
 
+    # Default Candidates
     if Candidate.query.count() == 0:
         db.session.add(Candidate(name="Candidate A"))
         db.session.add(Candidate(name="Candidate B"))
+        db.session.add(Candidate(name="Candidate C"))
         db.session.commit()
 
-# ---------------- OTP SETUP ---------------- #
+    # Default Admin
+    if Admin.query.count() == 0:
+        db.session.add(Admin(username="admin", password="admin123"))
+        db.session.commit()
 
-TWILIO_SID = "YOUR_SID"
-TWILIO_TOKEN = "YOUR_TOKEN"
-TWILIO_NUMBER = "YOUR_TWILIO_NUMBER"
+    # Default Voters
+    if Voter.query.count() == 0:
+        voters = ["V001", "V002", "V003", "V004"]
+        for v in voters:
+            db.session.add(Voter(voter_id=v))
+        db.session.commit()
 
-client = Client(TWILIO_SID, TWILIO_TOKEN)
 
-def send_otp(phone):
-    otp = random.randint(1000,9999)
-    session['otp'] = str(otp)
-
-    client.messages.create(
-        body=f"Your Voting OTP is {otp}",
-        from_=TWILIO_NUMBER,
-        to=phone
-    )
-
-# ---------------- ROUTES ---------------- #
+# ======================
+# Home Page
+# ======================
 
 @app.route("/")
-def index():
+def home():
     return render_template("index.html")
 
-# Register
-@app.route("/register", methods=["GET","POST"])
-def register():
-    if request.method == "POST":
-        phone = request.form['phone']
-        send_otp(phone)
-        session['phone'] = phone
-        return redirect("/verify")
-    return render_template("register.html")
 
-# OTP Verify
-@app.route("/verify", methods=["GET","POST"])
-def verify():
-    if request.method == "POST":
-        user_otp = request.form['otp']
+# ======================
+# Voter Page
+# ======================
 
-        if user_otp == session.get('otp'):
-            new_user = User(phone=session['phone'])
-            db.session.add(new_user)
-            db.session.commit()
-            session['user'] = new_user.id
-            return redirect("/vote")
-    return '''
-    <form method="POST">
-        Enter OTP: <input name="otp">
-        <button>Verify</button>
-    </form>
-    '''
-
-# Vote Page
-@app.route("/vote")
+@app.route("/vote", methods=["GET", "POST"])
 def vote():
-    user = User.query.get(session.get('user'))
 
-    if user.voted:
-        return "You already voted"
+    if request.method == "POST":
+
+        voter_id = request.form["voter_id"]
+        candidate_id = request.form["candidate"]
+
+        voter = Voter.query.filter_by(voter_id=voter_id).first()
+
+        if not voter:
+            return "Invalid Voter ID"
+
+        if voter.voted:
+            return "You already voted!"
+
+        candidate = Candidate.query.get(candidate_id)
+        candidate.votes += 1
+        voter.voted = True
+
+        db.session.commit()
+
+        return redirect("/success")
 
     candidates = Candidate.query.all()
     return render_template("vote.html", candidates=candidates)
 
-# Submit Vote
-@app.route("/cast_vote/<int:id>")
-def cast_vote(id):
-    user = User.query.get(session.get('user'))
 
-    if not user.voted:
-        candidate = Candidate.query.get(id)
-        candidate.votes += 1
-        user.voted = True
-        db.session.commit()
+# ======================
+# Success Page
+# ======================
 
-    return redirect("/vote")
+@app.route("/success")
+def success():
+    return render_template("success.html")
 
-# Admin Panel
-@app.route("/admin")
+
+# ======================
+# Admin Login
+# ======================
+
+@app.route("/admin", methods=["GET", "POST"])
 def admin():
-    candidates = Candidate.query.all()
-    return render_template("admin.html", candidates=candidates)
 
-# Live Chart Data
-@app.route("/results_data")
-def results_data():
-    candidates = Candidate.query.all()
-    return jsonify({
-        c.name: c.votes for c in candidates
-    })
+    if request.method == "POST":
 
-import os
+        username = request.form["username"]
+        password = request.form["password"]
+
+        admin = Admin.query.filter_by(username=username, password=password).first()
+
+        if admin:
+            session["admin"] = username
+            return redirect("/dashboard")
+
+        return "Invalid Admin Login"
+
+    return render_template("admin_login.html")
+
+
+# ======================
+# Admin Dashboard
+# ======================
+
+@app.route("/dashboard")
+def dashboard():
+
+    if "admin" not in session:
+        return redirect("/admin")
+
+    candidates = Candidate.query.all()
+    return render_template("dashboard.html", candidates=candidates)
+
+
+# ======================
+# Admin Logout
+# ======================
+
+@app.route("/admin_logout")
+def admin_logout():
+    session.pop("admin", None)
+    return redirect("/admin")
+
+
+# ======================
+# Run App
+# ======================
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # Use Render port, fallback to 5000 locally
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=True)
+
+

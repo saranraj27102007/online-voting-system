@@ -2,27 +2,26 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vote</title>
+<title>Admin Login</title>
 
 <style>
 
 body{
-    background:linear-gradient(135deg,#43cea2,#185a9d);
-    font-family:Arial;
-    margin:0;
+    background:linear-gradient(135deg,#8360c3,#2ebf91);
     display:flex;
     justify-content:center;
     align-items:center;
     height:100vh;
+    font-family:Arial;
 }
 
 .glass{
     backdrop-filter: blur(15px);
     background: rgba(255,255,255,0.15);
-    padding:30px;
+    padding:35px;
     border-radius:20px;
     color:white;
-    width:320px;
+    width:300px;
 }
 
 input{
@@ -30,7 +29,7 @@ input{
     padding:10px;
     border:none;
     border-radius:8px;
-    margin-bottom:15px;
+    margin:10px 0;
 }
 
 button{
@@ -40,7 +39,6 @@ button{
     border-radius:10px;
     background:white;
     font-weight:bold;
-    cursor:pointer;
 }
 
 </style>
@@ -50,25 +48,16 @@ button{
 
 <div class="glass">
 
-<h2>Enter Voter ID</h2>
+<h2>Admin Login</h2>
 
 <form method="POST">
+<input name="username" placeholder="Username" required>
+<input type="password" name="password" placeholder="Password" required>
 
-<input name="voter_id" placeholder="Voter ID" required>
-
-<h3>Select Candidate</h3>
-
-{% for c in candidates %}
-    <input type="radio" name="candidate" value="{{c.id}}" required>
-    {{c.name}} <br><br>
-{% endfor %}
-
-<button type="submit">Submit Vote</button>
-
+<button type="submit">Login</button>
 </form>
 
 </div>
 
 </body>
 </html>
-

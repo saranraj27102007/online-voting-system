@@ -1,21 +1,62 @@
+<!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="/static/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voting System</title>
+
+<style>
+
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#667eea,#764ba2);
+    font-family:Arial;
+}
+
+.glass{
+    backdrop-filter: blur(15px);
+    background: rgba(255,255,255,0.1);
+    padding:40px;
+    border-radius:20px;
+    text-align:center;
+    color:white;
+    width:300px;
+}
+
+button{
+    padding:12px 25px;
+    border:none;
+    border-radius:10px;
+    background:white;
+    cursor:pointer;
+    margin:10px;
+    font-weight:bold;
+}
+
+button:hover{
+    transform:scale(1.05);
+}
+
+</style>
 </head>
+
 <body>
 
-<div class="container">
-<h1>Online Voting</h1>
+<div class="glass">
+    <h1>🗳 Online Voting</h1>
 
-<a href="/register">
-<button>Start Voting</button>
-</a>
+    <a href="/vote">
+        <button>Vote Now</button>
+    </a>
 
-<a href="/admin">
-<button>Admin Panel</button>
-</a>
-
+    <a href="/admin">
+        <button>Admin Login</button>
+    </a>
 </div>
 
 </body>
 </html>
+

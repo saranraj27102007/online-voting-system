@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+    font-family:Arial;
+    background:#0f2027;
+    color:white;
+    text-align:center;
+}
+
+canvas{
+    max-width:500px;
+    margin:auto;
+}
+
+button{
+    padding:10px 20px;
+    border:none;
+    border-radius:10px;
+    margin-top:20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>📊 Live Voting Results</h1>
+
+<canvas id="chart"></canvas>
+
+<a href="/admin_logout">
+<button>Logout</button>
+</a>
+
+<script>
+
+let names = [
+{% for c in candidates %}
+"{{c.name}}",
+{% endfor %}
+]
+
+let votes = [
+{% for c in candidates %}
+{{c.votes}},
+{% endfor %}
+]
+
+let ctx = document.getElementById('chart');
+
+new Chart(ctx,{
+    type:'bar',
+    data:{
+        labels:names,
+        datasets:[{
+            label:'Votes',
+            data:votes
+        }]
+    }
+});
+
+// 🔥 Auto refresh every 5 seconds
+setTimeout(()=>location.reload(),5000);
+
+</script>
+
+</body>
+</html>

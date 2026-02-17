@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Success</title>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style>
+
+body{
+    background:linear-gradient(135deg,#ff9966,#ff5e62);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    color:white;
+    font-family:Arial;
+    text-align:center;
+}
+
+.box{
+    background:rgba(255,255,255,0.2);
+    padding:40px;
+    border-radius:20px;
+}
+
+button{
+    padding:12px 25px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+</style>
+</head>
+
+<body onload="celebrate()">
+
+<div class="box">
+<h1>✅ Vote Submitted</h1>
+
+<a href="/">
+<button>Back Home</button>
+</a>
+</div>
+
+<script>
+function celebrate(){
+    confetti({
+        particleCount:150,
+        spread:70,
+        origin:{y:0.6}
+    });
+}
+</script>
+
+</body>
+</html>
